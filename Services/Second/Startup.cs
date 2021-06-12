@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -11,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Second.Subscribers;
+using Shared.Settings;
 
 namespace Second
 {
@@ -26,6 +30,37 @@ namespace Second
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // SHARED_LIBRARY:
+            //  services.AddMassTransitWithRabbitMQ();
+            services.AddMassTransit(options =>
+            {
+                // Allow to listen to all events
+                options.AddConsumers(Assembly.GetEntryAssembly());
+                // or
+                // Allow to listen to certain Events
+                // options.AddConsumer<PaymentAddedSubscriber>();
+
+                // optional only for cosmetic change
+                // options.SetKebabCaseEndpointNameFormatter();
+
+                options.UsingRabbitMq((context, configuration) =>
+                {
+                    configuration.Host(Configuration["EventBusSettings:HostAddress"]);
+                    
+                    // allow to configure endpoints for registered events automatically
+                    configuration.ConfigureEndpoints(context);
+                    // or
+                    // configure subscriber's names to segregaters events to certain
+                    // name instead of using one endpoint name for event
+
+                    // configuration.ReceiveEndpoint("payment-queue", configure => 
+                    // {
+                    //     configure.ConfigureConsumer<PaymentAddedSubscriber>(context);
+                    //     configure.ConfigureConsumer<PaymentUpdatedConsumer>(context);
+                    // });
+                });
+            });
+            services.AddMassTransitHostedService();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

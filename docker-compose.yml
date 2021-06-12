@@ -4,20 +4,33 @@ version: '3.4'
 
 services:
 
-  first:
-    image: first
-    container_name: first
-    build:
-      context: .
-      dockerfile: Services/First/Dockerfile
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
     ports:
-      - 5000:5000
+      - 5672:5672
+      - 15672:15672
+    # volumes:
+    #   - rabbitmq_data:/var/lib/rabbitmq
+    hostname: rabbitmq
 
-  second:
-    image: second
-    container_name: second
-    build:
-      context: .
-      dockerfile: Services/Second/Dockerfile
-    ports:
-      - 5001:5000
+  # first:
+  #   image: first
+  #   container_name: first
+  #   build:
+  #     context: .
+  #     dockerfile: Services/First/Dockerfile
+  #   ports:
+  #     - 5000:5000
+
+  # second:
+  #   image: second
+  #   container_name: second
+  #   build:
+  #     context: .
+  #     dockerfile: Services/Second/Dockerfile
+  #   ports:
+  #     - 5001:5000
+
+# volumes:
+#   rabbitmq_data:

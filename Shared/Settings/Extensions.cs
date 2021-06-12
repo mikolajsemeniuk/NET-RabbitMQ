@@ -2,7 +2,7 @@ using MassTransit;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-// using MassTransit.Definitions;
+using MassTransit.Definition;
 
 namespace Shared.Settings
 {
@@ -13,11 +13,12 @@ namespace Shared.Settings
             services.AddMassTransit(options =>
             {
                 options.AddConsumers(Assembly.GetEntryAssembly());
-                options.UsingRabbitMQ((context, configuration) =>
+                options.SetKebabCaseEndpointNameFormatter();
+                options.UsingRabbitMq((context, configuration) =>
                 {
                     var config = context.GetService<IConfiguration>();
                     configuration.Host(config["EventBusSettings:HostAddress"]);
-                    //configuration.ConfigureEndpoints(context, new KebabCaseEndpointNameFormatter("one", false));
+                    configuration.ConfigureEndpoints(context);
                 });
             });
             services.AddMassTransitHostedService();
